@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
+</head>
+<body>
+<div id="app">
+    <input type="text" v-model="message" placeholder="Type your message here...">
+    <button @click="sendMessage">Send</button>
+    <br>
+    <br>
+    <ul>
+        <li
+                v-for="(item, index) in messages"
+                :key="'message_'+index"
+        >
+            [[ item ]]
+        </li>
+    </ul>
+</div>
+
+<script type="text/javascript">
+    new Vue({
+        el: '#app',
+        delimiters: ['[[', ']]'],
+        data: {
+            socket: null,
+            message: '',
+            messages: []
+        },
+        mounted() {
+            console.log(document.domain)
+            console.log(document.port)
+            this.socket = io.connect('http://' + document.domain + ':' + location.port);
+            this.socket.on('connect', () => {
+                this.socket.send('User has connected!');
+            });
+            this.socket.on('message', (msg) => {
+                let click = new Audio('/static/sound/success.mp3');
+                click.play()
+                this.messages.push(msg);
+            });
+        },
+        methods: {
+            sendMessage() {
+                if (this.message == '' || this.message == null){
+                    return
+                }
+                this.socket.send(this.message);
+                this.message = '';
+            }
+        }
+    });
+</script>
+</body>
+</html>
